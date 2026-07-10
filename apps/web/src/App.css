@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #FFFAF0 0%, #FFF5E6 100%);
+  min-height: 100vh;
+  color: #2D3436;
+}
+
+.irregular-card {
+  border-radius: 20px 40px 20px 60px;
+  transform: rotate(-2deg);
+  transition: all 0.3s ease;
+  background: white;
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.15);
+}
+
+.irregular-card:hover {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 0 12px 32px rgba(255, 107, 53, 0.25);
+}
+
+.blob-bg {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  z-index: -1;
+  animation: float 20s ease-in-out infinite;
+}
+
+.blob-bg.blob-1 {
+  background: linear-gradient(135deg, #FF6B35, #F7C59F);
+  top: -200px;
+  left: -200px;
+}
+
+.blob-bg.blob-2 {
+  background: linear-gradient(135deg, #2EC4B6, #F7C59F);
+  bottom: -200px;
+  right: -200px;
+  animation-delay: -10s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(50px, 50px) scale(1.1);
+  }
+}
+
+.wave-divider {
+  width: 100%;
+  height: 50px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.43-21.57,168.84-32.17,84.43-15.69,168.43-31.19,252.43-46.77,55.43-10.27,110.43-20.53,165.43-30.79,50.43-9.38,100.43-18.75,150.43-28.13V120H0V28.13C107.43,37.5,214.43,46.88,321.39,56.44Z' fill='%23FF6B35' opacity='0.3'/%3E%3C/svg%3E");
+  background-size: cover;
+}
+
+.gradient-btn {
+  background: linear-gradient(135deg, #FF6B35, #F7C59F);
+  border: none;
+  border-radius: 50px;
+  padding: 12px 32px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+}
+
+.gradient-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+}
+
+.gradient-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

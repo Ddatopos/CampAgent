@@ -1,0 +1,19 @@
+{
+  "name": "camp-agent",
+  "version": "1.0.0",
+  "description": "一键开营管家 - 运营提效引擎",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "shared/*"
+  ],
+  "scripts": {
+    "web": "npm run start --workspace=apps/web",
+    "server": "npm run dev --workspace=apps/server",
+    "dev": "concurrently \"npm run server\" \"npm run web\"",
+    "build": "npm run build --workspace=apps/web && npm run build --workspace=apps/server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
