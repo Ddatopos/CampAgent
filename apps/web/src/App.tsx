@@ -1,8 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import Navbar from './components/Navbar';
+import WelcomePage from './pages/WelcomePage';
 import SettingsPage from './pages/SettingsPage';
 import CreatePage from './pages/CreatePage';
 import CampListPage from './pages/CampListPage';
@@ -11,26 +12,38 @@ import './App.css';
 
 const theme = {
   token: {
-    colorPrimary: '#FF6B35',
-    colorSuccess: '#2EC4B6',
-    colorWarning: '#F7C59F',
-    colorBgBase: '#FFFAF0',
-    borderRadius: 12,
+    colorPrimary: '#42c7b0',
+    colorSuccess: '#42c7b0',
+    colorWarning: '#fcecb8',
+    colorBgBase: '#ffffff',
+    borderRadius: 20,
   },
+};
+
+const AppContent: React.FC = () => {
+  const location = useLocation();
+  const showNavbar = location.pathname !== '/';
+
+  return (
+    <>
+      {showNavbar && <Navbar />}
+      <Routes>
+        <Route path="/" element={<WelcomePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/create" element={<CreatePage />} />
+        <Route path="/camps" element={<CampListPage />} />
+        <Route path="/camps/:id" element={<CampDetailPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
+  );
 };
 
 function App() {
   return (
     <ConfigProvider theme={theme} locale={zhCN}>
       <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/" element={<CreatePage />} />
-          <Route path="/camps" element={<CampListPage />} />
-          <Route path="/camps/:id" element={<CampDetailPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AppContent />
       </Router>
     </ConfigProvider>
   );

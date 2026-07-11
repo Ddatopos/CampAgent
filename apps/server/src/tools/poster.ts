@@ -17,355 +17,201 @@ interface CampPlan {
   highlights: string[];
 }
 
-class PosterTool {
-  async generate(plan: CampPlan, config: LLMConfig) {
-    const userPrompt = `
-请为以下训练营生成 HTML 海报：
+const benefitSchema = z.object({
+  text: z.string(),
+  highlight: z.string(),
+});
 
-营名：${plan.campName}
-受众：${plan.targetAudience}
-日期：${plan.startDate}
-天数：${plan.durationDays} 天
-主题：${plan.theme}
-亮点：${plan.highlights.join('、')}
+const curriculumChapterSchema = z.object({
+  chapter: z.string(),
+  lessons: z.array(z.string()).min(1),
+});
 
-要求：
-1. 生成移动端友好的 HTML，内联 CSS
-2. 使用暖色调（橙色、杏色、青绿色）
-3. 在海报中预留 {{QR_CODE}} 占位符用于插入二维码
-4. 标题醒目，布局清晰
-    `;
-    
-    const response = await callLLM(config, posterSystemPrompt, userPrompt, true);
-    
-    try {
-      const result = JSON.parse(response);
-      return {
-        html: result.htmlTemplate || result.html,
-        title: result.title || plan.campName,
-        subtitle: result.subtitle || plan.theme,
-        bullets: result.bullets || plan.highlights,
-      };
-    } catch (error) {
-      console.error('Poster 输出解析失败:', error);
-      return {
-        html: this.getDefaultHTML(plan),
-        title: plan.campName,
-        subtitle: plan.theme,
-        bullets: plan.highlights,
-      };
-    }
-  }
-  
-  private getDefaultHTML(plan: CampPlan): string {
-    return `
-<!DOCTYPE html>
+export const posterContentSchema = z.object({
+  posterType: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string(),
+  category: z.string(),
+  joinText: z.string(),
+  benefits: z.array(benefitSchema).min(1),
+  curriculum: z.array(curriculumChapterSchema).min(1),
+  qrText: z.string(),
+});
+
+export type PosterContent = z.infer<typeof posterContentSchema>;
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function highlightText(text: string, keyword: string): string {
+  const safeText = escapeHtml(text);
+  const safeKeyword = escapeHtml(keyword);
+  if (!safeKeyword) return safeText;
+  return safeText.replace(safeKeyword, `<strong style="color:#FF6B35;">${safeKeyword}</strong>`);
+}
+
+export function buildPosterHTML(content: PosterContent): string {
+  const benefitsHtml = content.benefits
+    .map(
+      (b, i) => `
+        <div style="background:white;border-left:4px solid #2EC4B6;padding:15px 20px;margin-bottom:12px;border-radius:12px;font-size:15px;color:#2D3436;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+          <span style="margin-right:8px;">${['🚀', '💡', '⭐', '🎯', '🔥'][i % 5]}</span>
+          ${highlightText(b.text, b.highlight)}
+        </div>`
+    )
+    .join('');
+
+  const mid = Math.ceil(content.curriculum.length / 2);
+  const leftChapters = content.curriculum.slice(0, mid);
+  const rightChapters = content.curriculum.slice(mid);
+
+  const renderChapter = (ch: z.infer<typeof curriculumChapterSchema>) => `
+    <div style="margin-bottom:18px;">
+      <div style="font-size:15px;font-weight:700;color:#FF6B35;margin-bottom:8px;">${escapeHtml(ch.chapter)}</div>
+      ${ch.lessons
+        .map(
+          (lesson) =>
+            `<div style="font-size:13px;color:#636E72;padding:3px 0 3px 12px;border-left:2px solid #F7C59F;margin-bottom:4px;">${escapeHtml(lesson)}</div>`
+        )
+        .join('')}
+    </div>`;
+
+  const curriculumHtml = `
+    <div style="display:flex;gap:16px;">
+      <div style="flex:1;">${leftChapters.map(renderChapter).join('')}</div>
+      <div style="flex:1;">${rightChapters.map(renderChapter).join('')}</div>
+    </div>`;
+
+  return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: 'Noto Sans SC', sans-serif;
-      background: linear-gradient(135deg, #FFFAF0 0%, #FFF5E6 50%, #FFE8D6 100%);
-      min-height: 100vh;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .poster {
-      position: relative;
-      max-width: 600px;
-      width: 100%;
-      background: white;
-      border-radius: 30px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(255, 107, 53, 0.2), 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* 装饰背景 */
-    .decorative-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 300px;
-      background: linear-gradient(135deg, #FF6B35 0%, #F7C59F 50%, #2EC4B6 100%);
-      opacity: 0.1;
-      z-index: 0;
-    }
-    
-    .decorative-circle {
-      position: absolute;
-      border-radius: 50%;
-      opacity: 0.15;
-      z-index: 0;
-    }
-    
-    .circle-1 {
-      width: 200px;
-      height: 200px;
-      background: #FF6B35;
-      top: -50px;
-      right: -50px;
-    }
-    
-    .circle-2 {
-      width: 150px;
-      height: 150px;
-      background: #2EC4B6;
-      bottom: 100px;
-      left: -30px;
-    }
-    
-    .circle-3 {
-      width: 100px;
-      height: 100px;
-      background: #F7C59F;
-      top: 200px;
-      right: 20px;
-    }
-    
-    /* 标题区域 */
-    .header {
-      position: relative;
-      z-index: 1;
-      padding: 40px 30px 30px;
-      text-align: center;
-    }
-    
-    .badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #FF6B35, #F7C59F);
-      color: white;
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    
-    .title {
-      font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif;
-      font-size: 42px;
-      font-weight: 900;
-      color: #FF6B35;
-      margin-bottom: 12px;
-      text-shadow: 2px 2px 4px rgba(255, 107, 53, 0.1);
-      line-height: 1.3;
-    }
-    
-    .subtitle {
-      font-size: 20px;
-      color: #636E72;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-    
-    .divider {
-      width: 60px;
-      height: 4px;
-      background: linear-gradient(90deg, #FF6B35, #2EC4B6);
-      margin: 20px auto;
-      border-radius: 2px;
-    }
-    
-    /* 信息卡片 */
-    .info-section {
-      position: relative;
-      z-index: 1;
-      padding: 0 30px 20px;
-    }
-    
-    .info-card {
-      background: linear-gradient(135deg, #FFF5E6, #FFFAF0);
-      border-radius: 20px;
-      padding: 25px;
-      margin-bottom: 25px;
-      border: 2px solid rgba(255, 107, 53, 0.1);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    }
-    
-    .info-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 15px;
-      font-size: 17px;
-      color: #2D3436;
-    }
-    
-    .info-item:last-child {
-      margin-bottom: 0;
-    }
-    
-    .info-icon {
-      font-size: 24px;
-      margin-right: 12px;
-    }
-    
-    .info-label {
-      font-weight: 500;
-      color: #FF6B35;
-      margin-right: 8px;
-    }
-    
-    /* 亮点区域 */
-    .highlights-section {
-      position: relative;
-      z-index: 1;
-      padding: 0 30px 30px;
-    }
-    
-    .highlights-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: #2D3436;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    
-    .highlight-item {
-      background: white;
-      border-left: 4px solid #2EC4B6;
-      padding: 15px 20px;
-      margin-bottom: 15px;
-      border-radius: 12px;
-      font-size: 16px;
-      color: #2D3436;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      transition: transform 0.3s ease;
-    }
-    
-    .highlight-item:hover {
-      transform: translateX(5px);
-    }
-    
-    .highlight-icon {
-      margin-right: 10px;
-      font-size: 20px;
-    }
-    
-    /* 二维码区域 */
-    .qr-section {
-      position: relative;
-      z-index: 1;
-      padding: 30px;
-      background: linear-gradient(135deg, #FF6B35, #F7C59F);
-      text-align: center;
-      border-radius: 0 0 30px 30px;
-    }
-    
-    .qr-tip {
-      color: white;
-      font-size: 18px;
-      font-weight: 500;
-      margin-bottom: 20px;
-    }
-    
-    .qr-code {
-      display: inline-block;
-      background: white;
-      padding: 15px;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .qr-code img {
-      display: block;
-      border-radius: 10px;
-    }
-    
-    /* 动画 */
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-    
-    /* 装饰SVG */
-    .decoration {
-      position: absolute;
-      z-index: 0;
-      opacity: 0.1;
-    }
-  </style>
+  <title>${escapeHtml(content.title)}</title>
 </head>
-<body>
-  <div class="poster">
-    <!-- 装饰背景 -->
-    <div class="decorative-bg"></div>
-    <div class="decorative-circle circle-1"></div>
-    <div class="decorative-circle circle-2"></div>
-    <div class="decorative-circle circle-3"></div>
-    
-    <!-- 装饰SVG图案 -->
-    <svg class="decoration" style="top: 50px; left: 20px;" width="60" height="60" viewBox="0 0 60 60">
-      <polygon points="30,5 55,25 45,55 15,55 5,25" fill="#FF6B35"/>
-    </svg>
-    <svg class="decoration" style="bottom: 150px; right: 30px;" width="50" height="50" viewBox="0 0 50 50">
-      <circle cx="25" cy="25" r="20" fill="none" stroke="#2EC4B6" stroke-width="3"/>
-    </svg>
-    
-    <!-- 标题区域 -->
-    <div class="header">
-      <div class="badge">🔥 限时训练营</div>
-      <h1 class="title">${plan.campName}</h1>
-      <p class="subtitle">${plan.theme}</p>
-      <div class="divider"></div>
+<body style="margin:0;padding:20px;font-family:'Noto Sans SC',sans-serif;background:linear-gradient(135deg,#FFFAF0 0%,#FFF5E6 50%,#FFE8D6 100%);display:flex;justify-content:center;">
+  <div style="position:relative;max-width:600px;width:100%;background:white;border-radius:30px;overflow:hidden;box-shadow:0 20px 60px rgba(255,107,53,0.2);">
+    <div style="position:absolute;top:0;left:0;right:0;height:280px;background:linear-gradient(135deg,#FF6B35 0%,#F7C59F 50%,#2EC4B6 100%);opacity:0.08;"></div>
+
+    <!-- 1. 顶部标题区 -->
+    <div style="position:relative;z-index:1;padding:40px 30px 24px;text-align:center;">
+      <div style="display:inline-block;background:linear-gradient(135deg,#FF6B35,#F7C59F);color:white;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:500;margin-bottom:15px;">🔥 限时训练营</div>
+      <h1 style="font-size:38px;font-weight:900;color:#FF6B35;margin:0 0 12px;line-height:1.3;">${escapeHtml(content.title)}</h1>
+      <p style="font-size:20px;color:#636E72;font-weight:500;margin:0 0 8px;">${escapeHtml(content.subtitle)}</p>
+      <p style="font-size:14px;color:#B2BEC3;margin:0;">${escapeHtml(content.category)}</p>
+      <div style="width:60px;height:4px;background:linear-gradient(90deg,#FF6B35,#2EC4B6);margin:20px auto 0;border-radius:2px;"></div>
     </div>
-    
-    <!-- 信息卡片 -->
-    <div class="info-section">
-      <div class="info-card">
-        <div class="info-item">
-          <span class="info-icon">📅</span>
-          <span class="info-label">时间：</span>
-          <span>${plan.startDate} 起，共 ${plan.durationDays} 天</span>
-        </div>
-        <div class="info-item">
-          <span class="info-icon">👥</span>
-          <span class="info-label">受众：</span>
-          <span>${plan.targetAudience}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-icon">🎯</span>
-          <span class="info-label">主题：</span>
-          <span>${plan.theme}</span>
-        </div>
+
+    <!-- 2. JOIN US 邀约区 -->
+    <div style="position:relative;z-index:1;padding:0 30px 24px;text-align:center;">
+      <div style="display:inline-block;background:linear-gradient(135deg,#FFF5E6,#FFFAF0);border:2px solid rgba(255,107,53,0.15);border-radius:50px;padding:14px 32px;font-size:18px;font-weight:700;color:#FF6B35;letter-spacing:1px;">
+        ${escapeHtml(content.joinText)}
       </div>
     </div>
-    
-    <!-- 亮点列表 -->
-    <div class="highlights-section">
-      <div class="highlights-title">✨ 课程亮点</div>
-      ${plan.highlights.map((h, i) => `
-        <div class="highlight-item">
-          <span class="highlight-icon">${['🚀', '💡', '⭐', '🎯', '🔥'][i % 5]}</span>
-          ${h}
-        </div>
-      `).join('')}
+
+    <!-- 3. 你将收获 -->
+    <div style="position:relative;z-index:1;padding:0 30px 28px;">
+      <div style="font-size:22px;font-weight:700;color:#2D3436;margin-bottom:20px;text-align:center;">✨ 你将收获</div>
+      ${benefitsHtml}
     </div>
-    
-    <!-- 二维码 -->
-    <div class="qr-section">
-      <p class="qr-tip">📱 扫码立即报名</p>
-      <div class="qr-code">{{QR_CODE}}</div>
+
+    <!-- 4. 课程目录 -->
+    <div style="position:relative;z-index:1;padding:0 30px 28px;">
+      <div style="font-size:22px;font-weight:700;color:#2D3436;margin-bottom:20px;text-align:center;">📚 课程目录</div>
+      ${curriculumHtml}
+    </div>
+
+    <!-- 5. 底部二维码区 -->
+    <div style="position:relative;z-index:1;padding:30px;background:linear-gradient(135deg,#FF6B35,#F7C59F);text-align:center;border-radius:0 0 30px 30px;">
+      <p style="color:white;font-size:18px;font-weight:500;margin:0 0 20px;">${escapeHtml(content.qrText)}</p>
+      <div style="display:inline-block;background:white;padding:15px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,0.2);">{{QR_CODE}}</div>
     </div>
   </div>
 </body>
-</html>
+</html>`;
+}
+
+const DEFAULT_CHAPTERS = [
+  { chapter: 'Ⅰ. 认知与定位', lessons: ['行业趋势与核心概念', '学习路径规划', '目标设定与方法'] },
+  { chapter: 'Ⅱ. 基础搭建', lessons: ['工具与环境准备', '基础技能入门', '实操练习'] },
+  { chapter: 'Ⅲ. 内容产出', lessons: ['核心方法掌握', '案例拆解分析', '动手实践'] },
+  { chapter: 'Ⅳ. 专项实操', lessons: ['进阶技巧训练', '常见问题解决', '项目练习'] },
+  { chapter: 'Ⅴ. 流量运营', lessons: ['推广策略入门', '渠道运营方法', '用户增长技巧'] },
+  { chapter: 'Ⅵ. 数据复盘', lessons: ['数据分析基础', '效果评估方法', '优化迭代'] },
+  { chapter: 'Ⅶ. 变现规划', lessons: ['商业化路径', '变现模式分析', '实战方案'] },
+  { chapter: 'Ⅷ. 结业输出', lessons: ['成果整理展示', '作品集构建', '后续成长规划'] },
+];
+
+function buildFallbackContent(plan: CampPlan): PosterContent {
+  const benefits = plan.highlights.length > 0
+    ? plan.highlights.map((h) => ({ text: h, highlight: h.slice(0, Math.min(6, h.length)) }))
+    : [
+        { text: '掌握核心技能，建立系统化知识体系', highlight: '核心技能' },
+        { text: '完成实战项目，积累可展示的作品成果', highlight: '实战项目' },
+        { text: '获得社群支持，与同行者共同进步', highlight: '社群支持' },
+      ];
+
+  while (benefits.length < 5) {
+    benefits.push({ text: '持续提升专业能力，拓展职业发展空间', highlight: '职业发展' });
+  }
+
+  return {
+    posterType: '招生引流海报',
+    title: plan.campName.includes('训练营') ? plan.campName : `${plan.campName}训练营`,
+    subtitle: `${plan.durationDays}天${plan.theme}，从零到一系统进阶`,
+    category: `面向${plan.targetAudience} · ${plan.theme}`,
+    joinText: 'JOIN US · 一起开启成长之旅',
+    benefits: benefits.slice(0, 5),
+    curriculum: DEFAULT_CHAPTERS,
+    qrText: `扫码立即报名，${plan.startDate} 开营`,
+  };
+}
+
+class PosterTool {
+  async generate(plan: CampPlan, config: LLMConfig) {
+    const userPrompt = `
+请为以下训练营生成海报文案 JSON（5大分区全部必填，curriculum 输出完整8章）：
+
+营名：${plan.campName}
+受众：${plan.targetAudience}
+开营日期：${plan.startDate}
+天数：${plan.durationDays} 天
+主题：${plan.theme}
+参考亮点：${plan.highlights.join('、')}
+
+要求：
+1. 严格按 system prompt 的 JSON 字段输出，不要输出 HTML
+2. benefits 输出 5 条，curriculum 输出 8 章（Ⅰ~Ⅷ）
+3. 文案贴合训练营主题与受众，参考亮点但不照搬
     `;
+
+    const response = await callLLM(config, posterSystemPrompt, userPrompt, true, 4000);
+
+    let content: PosterContent;
+    try {
+      const parsed = JSON.parse(response);
+      content = posterContentSchema.parse(parsed);
+    } catch (error) {
+      console.error('Poster 输出解析失败，使用 fallback 文案:', error);
+      content = buildFallbackContent(plan);
+    }
+
+    return {
+      html: buildPosterHTML(content),
+      title: content.title,
+      subtitle: content.subtitle,
+      category: content.category,
+      joinText: content.joinText,
+      benefits: content.benefits,
+      curriculum: content.curriculum,
+      qrText: content.qrText,
+      bullets: content.benefits.map((b) => b.text),
+    };
   }
 }
 

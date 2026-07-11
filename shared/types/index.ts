@@ -23,6 +23,16 @@ export interface DailyContent {
   checkInPrompt: string;
 }
 
+export interface PosterBenefit {
+  text: string;
+  highlight: string;
+}
+
+export interface PosterChapter {
+  chapter: string;
+  lessons: string[];
+}
+
 export interface Camp {
   id: string;
   userPrompt: string;
@@ -31,6 +41,11 @@ export interface Camp {
     html: string;
     title: string;
     subtitle: string;
+    category?: string;
+    joinText?: string;
+    benefits?: PosterBenefit[];
+    curriculum?: PosterChapter[];
+    qrText?: string;
     bullets: string[];
   };
   form: FormField[];

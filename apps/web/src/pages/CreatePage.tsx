@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCampStore } from '../stores/campStore';
 import { useConfigStore } from '../stores/configStore';
 import { generateCamp } from '../api/camps';
+import { FloatingCircles, GeometricPatterns } from '../components/DecorativeElements';
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -67,103 +68,159 @@ const CreatePage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '40px 20px', maxWidth: 900, margin: '0 auto' }}>
-      <div className="blob-bg blob-1" />
-      <div className="blob-bg blob-2" />
+    <div style={{ padding: '40px 20px', maxWidth: 900, margin: '0 auto', position: 'relative' }}>
+      <FloatingCircles />
+      <GeometricPatterns />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
+        style={{ position: 'relative', zIndex: 1 }}
       >
         {!config && (
-          <Alert
-            message="请先配置 LLM"
-            description={
-              <span>
-                使用一键开营功能前，需要先配置 LLM API。
-                <Button type="link" onClick={() => navigate('/settings')} style={{ padding: 0 }}>
-                  立即配置
-                </Button>
-              </span>
-            }
-            type="warning"
-            showIcon
-            style={{ marginBottom: 24, borderRadius: 12 }}
-          />
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <Alert
+              message="请先配置 LLM"
+              description={
+                <span>
+                  使用一键开营功能前，需要先配置 LLM API。
+                  <Button type="link" onClick={() => navigate('/settings')} style={{ padding: 0 }}>
+                    立即配置
+                  </Button>
+                </span>
+              }
+              type="warning"
+              showIcon
+              style={{ marginBottom: 24, borderRadius: 20 }}
+            />
+          </motion.div>
         )}
 
-        <Card className="irregular-card glass-effect" style={{ marginBottom: 24 }}>
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ color: '#FF6B35', marginBottom: 8 }}>
-                <Sparkles size={32} style={{ marginRight: 8 }} />
-                一键开营
-              </Title>
-              <Text type="secondary">输入一句话需求，自动生成开营物料</Text>
-            </div>
+        <motion.div
+          whileHover={{ rotate: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card
+            style={{
+              marginBottom: 24,
+              borderRadius: '40px 60px 40px 60px',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 107, 53, 0.1)',
+              boxShadow: '0 12px 32px rgba(255, 107, 53, 0.15)',
+              transform: 'rotate(-1deg)',
+            }}
+          >
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              <div style={{ textAlign: 'center' }}>
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  style={{ display: 'inline-block' }}
+                >
+                  <Title level={2} style={{ color: '#FF6B35', marginBottom: 8 }}>
+                    <Sparkles size={32} style={{ marginRight: 8 }} />
+                    一键开营
+                  </Title>
+                </motion.div>
+                <Text type="secondary">输入一句话需求，自动生成开营物料</Text>
+              </div>
 
-            <TextArea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="例如：下周五办一场面向新手的华为云数据库实战营"
-              autoSize={{ minRows: 3, maxRows: 6 }}
-              style={{
-                fontSize: 16,
-                borderRadius: 20,
-                border: '2px solid #FF6B35',
-                padding: 16,
-              }}
-            />
-
-            {loading && (
-              <Progress
-                percent={progress}
-                strokeColor={{
-                  '0%': '#FF6B35',
-                  '100%': '#F7C59F',
+              <TextArea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="例如：下周五办一场面向新手的华为云数据库实战营"
+                autoSize={{ minRows: 3, maxRows: 6 }}
+                style={{
+                  fontSize: 16,
+                  borderRadius: 30,
+                  border: '2px solid #FF6B35',
+                  padding: 20,
+                  background: 'rgba(255, 250, 240, 0.5)',
                 }}
-                style={{ marginTop: 16 }}
               />
-            )}
 
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleGenerate}
-              loading={loading}
-              className="gradient-btn"
-              icon={<Sparkles size={20} />}
-              block
-              style={{ height: 56, fontSize: 18 }}
-            >
-              一键开营
-            </Button>
-          </Space>
-        </Card>
+              {loading && (
+                <Progress
+                  percent={progress}
+                  strokeColor={{
+                    '0%': '#FF6B35',
+                    '100%': '#F7C59F',
+                  }}
+                  style={{ marginTop: 16 }}
+                />
+              )}
 
-        <Card className="irregular-card glass-effect">
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleGenerate}
+                loading={loading}
+                className="gradient-btn"
+                icon={<Sparkles size={20} />}
+                block
+                style={{ height: 60, fontSize: 18, borderRadius: 30 }}
+              >
+                一键开营
+              </Button>
+            </Space>
+          </Card>
+        </motion.div>
+
+        <Card
+          style={{
+            borderRadius: '30px 50px 30px 50px',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(46, 196, 182, 0.1)',
+            boxShadow: '0 8px 24px rgba(46, 196, 182, 0.1)',
+            transform: 'rotate(1deg)',
+          }}
+        >
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Space>
-              <Lightbulb size={20} style={{ color: '#FF6B35' }} />
-              <Text strong>示例需求</Text>
-            </Space>
-            {examplePrompts.map((example, index) => (
-              <Button
-                key={index}
-                type="dashed"
-                block
-                onClick={() => setPrompt(example)}
+              <div
                 style={{
-                  textAlign: 'left',
-                  height: 'auto',
-                  padding: '12px 16px',
-                  borderRadius: 12,
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #FF6B35, #F7C59F)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                {example}
-              </Button>
-            ))}
+                <Lightbulb size={18} color="white" />
+              </div>
+              <Text strong style={{ fontSize: 16 }}>示例需求</Text>
+            </Space>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              {examplePrompts.map((example, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    type="dashed"
+                    onClick={() => setPrompt(example)}
+                    style={{
+                      borderRadius: 20,
+                      border: '2px dashed #2EC4B6',
+                      background: 'rgba(46, 196, 182, 0.05)',
+                      padding: '8px 20px',
+                      height: 'auto',
+                    }}
+                  >
+                    {example}
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
           </Space>
         </Card>
       </motion.div>

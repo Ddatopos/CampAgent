@@ -34,7 +34,8 @@ export const callLLM = async (
   config: LLMConfig,
   systemPrompt: string,
   userPrompt: string,
-  jsonMode: boolean = false
+  jsonMode: boolean = false,
+  maxTokens: number = 2000
 ): Promise<string> => {
   const client = new OpenAI({
     baseURL: config.baseUrl,
@@ -49,7 +50,7 @@ export const callLLM = async (
     ],
     response_format: jsonMode ? { type: 'json_object' } : undefined,
     temperature: 0.7,
-    max_tokens: 2000,
+    max_tokens: maxTokens,
   });
   
   return response.choices[0]?.message?.content || '';
