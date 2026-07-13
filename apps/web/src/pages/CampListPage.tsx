@@ -23,7 +23,7 @@ const CampListPage: React.FC = () => {
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Title level={2} style={{ color: '#FF6B35', margin: 0 }}>
+            <Title level={2} style={{ color: '#42c7b0', margin: 0 }}>
               活动列表
             </Title>
             <Button
@@ -57,7 +57,7 @@ const CampListPage: React.FC = () => {
                     transition={{ delay: index * 0.1 }}
                   >
                     <Card
-                      className="irregular-card"
+                      className="irregular-card glass-effect"
                       hoverable
                       onClick={() => navigate(`/camps/${camp.id}`)}
                     >
@@ -67,8 +67,8 @@ const CampListPage: React.FC = () => {
                         </Title>
 
                         <Space wrap>
-                          <Tag color="#FF6B35">{camp.plan.theme}</Tag>
-                          <Tag color="#2EC4B6">{camp.plan.targetAudience}</Tag>
+                          <Tag color="#42c7b0">{camp.plan.theme}</Tag>
+                          <Tag color="#95e1d3">{camp.plan.targetAudience}</Tag>
                         </Space>
 
                         <Space split="|">

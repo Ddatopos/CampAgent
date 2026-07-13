@@ -126,10 +126,9 @@ export function buildPosterHTML(content: PosterContent): string {
       ${curriculumHtml}
     </div>
 
-    <!-- 5. 底部二维码区 -->
-    <div style="position:relative;z-index:1;padding:30px;background:linear-gradient(135deg,#FF6B35,#F7C59F);text-align:center;border-radius:0 0 30px 30px;">
-      <p style="color:white;font-size:18px;font-weight:500;margin:0 0 20px;">${escapeHtml(content.qrText)}</p>
-      <div style="display:inline-block;background:white;padding:15px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,0.2);">{{QR_CODE}}</div>
+    <!-- 5. 底部区域 -->
+    <div style="position:relative;z-index:1;padding:30px;background:linear-gradient(135deg,#42c7b0,#95e1d3);text-align:center;border-radius:0 0 30px 30px;">
+      <p style="color:white;font-size:18px;font-weight:500;margin:0;">扫码报名，开启学习之旅</p>
     </div>
   </div>
 </body>

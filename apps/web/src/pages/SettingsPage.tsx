@@ -41,7 +41,7 @@ const SettingsPage: React.FC = () => {
           className="irregular-card glass-effect"
           title={
             <Space>
-              <Settings size={24} style={{ color: '#FF6B35' }} />
+              <Settings size={24} style={{ color: '#42c7b0' }} />
               <span style={{ fontSize: 20, fontWeight: 600 }}>LLM 配置</span>
             </Space>
           }

@@ -51,7 +51,7 @@ export interface Camp {
   form: FormField[];
   dailyContents: DailyContent[];
   registrationUrl: string;
-  qrCodeDataUrl: string;
+  qrCodeDataUrl?: string;
   status: 'draft' | 'ready';
   createdAt: string;
   updatedAt: string;

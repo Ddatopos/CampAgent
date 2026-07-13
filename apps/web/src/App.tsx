@@ -7,7 +7,11 @@ import WelcomePage from './pages/WelcomePage';
 import SettingsPage from './pages/SettingsPage';
 import CreatePage from './pages/CreatePage';
 import CampListPage from './pages/CampListPage';
-import CampDetailPage from './pages/CampDetailPage';
+import CampOverviewPage from './pages/CampOverviewPage';
+import CampOverviewDetail from './pages/CampOverviewDetail';
+import CampPosterDetail from './pages/CampPosterDetail';
+import CampFormDetail from './pages/CampFormDetail';
+import CampContentDetail from './pages/CampContentDetail';
 import './App.css';
 
 const theme = {
@@ -32,7 +36,11 @@ const AppContent: React.FC = () => {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/create" element={<CreatePage />} />
         <Route path="/camps" element={<CampListPage />} />
-        <Route path="/camps/:id" element={<CampDetailPage />} />
+        <Route path="/camps/:id" element={<CampOverviewPage />} />
+        <Route path="/camps/:id/overview" element={<CampOverviewDetail />} />
+        <Route path="/camps/:id/poster" element={<CampPosterDetail />} />
+        <Route path="/camps/:id/form" element={<CampFormDetail />} />
+        <Route path="/camps/:id/content" element={<CampContentDetail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

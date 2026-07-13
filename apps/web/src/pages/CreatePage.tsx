@@ -107,12 +107,11 @@ const CreatePage: React.FC = () => {
           <Card
             style={{
               marginBottom: 24,
-              borderRadius: '40px 60px 40px 60px',
+              borderRadius: 24,
               background: 'rgba(255, 255, 255, 0.9)',
               backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255, 107, 53, 0.1)',
-              boxShadow: '0 12px 32px rgba(255, 107, 53, 0.15)',
-              transform: 'rotate(-1deg)',
+              border: '2px solid rgba(66, 199, 176, 0.1)',
+              boxShadow: '0 12px 32px rgba(66, 199, 176, 0.15)',
             }}
           >
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -122,7 +121,7 @@ const CreatePage: React.FC = () => {
                   transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                   style={{ display: 'inline-block' }}
                 >
-                  <Title level={2} style={{ color: '#FF6B35', marginBottom: 8 }}>
+                  <Title level={2} style={{ color: '#42c7b0', marginBottom: 8 }}>
                     <Sparkles size={32} style={{ marginRight: 8 }} />
                     一键开营
                   </Title>
@@ -137,10 +136,10 @@ const CreatePage: React.FC = () => {
                 autoSize={{ minRows: 3, maxRows: 6 }}
                 style={{
                   fontSize: 16,
-                  borderRadius: 30,
-                  border: '2px solid #FF6B35',
+                  borderRadius: 24,
+                  border: '2px solid #42c7b0',
                   padding: 20,
-                  background: 'rgba(255, 250, 240, 0.5)',
+                  background: 'rgba(66, 199, 176, 0.05)',
                 }}
               />
 
@@ -148,8 +147,8 @@ const CreatePage: React.FC = () => {
                 <Progress
                   percent={progress}
                   strokeColor={{
-                    '0%': '#FF6B35',
-                    '100%': '#F7C59F',
+                    '0%': '#42c7b0',
+                    '100%': '#95e1d3',
                   }}
                   style={{ marginTop: 16 }}
                 />
@@ -173,12 +172,11 @@ const CreatePage: React.FC = () => {
 
         <Card
           style={{
-            borderRadius: '30px 50px 30px 50px',
+            borderRadius: 24,
             background: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(10px)',
-            border: '2px solid rgba(46, 196, 182, 0.1)',
-            boxShadow: '0 8px 24px rgba(46, 196, 182, 0.1)',
-            transform: 'rotate(1deg)',
+            border: '2px solid rgba(66, 199, 176, 0.1)',
+            boxShadow: '0 8px 24px rgba(66, 199, 176, 0.1)',
           }}
         >
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -188,7 +186,7 @@ const CreatePage: React.FC = () => {
                   width: 32,
                   height: 32,
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #FF6B35, #F7C59F)',
+                  background: 'linear-gradient(135deg, #42c7b0, #95e1d3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -210,8 +208,8 @@ const CreatePage: React.FC = () => {
                     onClick={() => setPrompt(example)}
                     style={{
                       borderRadius: 20,
-                      border: '2px dashed #2EC4B6',
-                      background: 'rgba(46, 196, 182, 0.05)',
+                      border: '2px dashed #42c7b0',
+                      background: 'rgba(66, 199, 176, 0.05)',
                       padding: '8px 20px',
                       height: 'auto',
                     }}

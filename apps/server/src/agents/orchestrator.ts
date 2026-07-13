@@ -2,7 +2,6 @@ import { plannerAgent } from './planner';
 import { posterTool } from '../tools/poster';
 import { formTool } from '../tools/form';
 import { contentTool } from '../tools/content';
-import { qrcodeTool } from '../tools/qrcode';
 
 interface LLMConfig {
   baseUrl: string;
@@ -28,21 +27,14 @@ class Orchestrator {
     console.log('💬 文案生成完成');
     
     const registrationUrl = `http://localhost:3000/register/${plan.campName}`;
-    const qrCodeDataUrl = await qrcodeTool.generate(registrationUrl);
-    
-    const posterWithQR = poster.html.replace('{{QR_CODE}}', `<img src="${qrCodeDataUrl}" alt="QR Code" />`);
     
     return {
       userPrompt: prompt,
       plan,
-      poster: {
-        ...poster,
-        html: posterWithQR,
-      },
+      poster,
       form,
       dailyContents,
       registrationUrl,
-      qrCodeDataUrl,
       status: 'ready' as const,
     };
   }

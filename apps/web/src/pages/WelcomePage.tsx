@@ -108,7 +108,7 @@ const WelcomePage: React.FC = () => {
                 fontStyle: 'italic',
               }}
             >
-              "{message}"
+              {message}
             </Text>
           </motion.div>
         </div>
