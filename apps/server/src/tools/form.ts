@@ -51,7 +51,7 @@ class FormTool {
 4. 返回 JSON 数组格式
     `;
     
-    const response = await callLLM(config, formSystemPrompt, userPrompt, true);
+    const { content: response } = await callLLM(config, formSystemPrompt, userPrompt, true);
     
     try {
       const result = JSON.parse(response);

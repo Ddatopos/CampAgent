@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, Input, Button, message, Progress, Space, Typography, Alert } from 'antd';
 import { Sparkles, Lightbulb } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCampStore } from '../stores/campStore';
 import { useConfigStore } from '../stores/configStore';
+import { useUIStore } from '../stores/uiStore';
 import { generateCamp } from '../api/camps';
 import { FloatingCircles, GeometricPatterns } from '../components/DecorativeElements';
 
@@ -18,52 +19,64 @@ const examplePrompts = [
 ];
 
 const CreatePage: React.FC = () => {
-  const [prompt, setPrompt] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
   const { addCamp } = useCampStore();
   const { config } = useConfigStore();
+  const {
+    createPrompt,
+    setCreatePrompt,
+    clearCreatePrompt,
+    createLoading,
+    createProgress,
+    setCreateLoading,
+    setCreateProgress,
+    tickCreateProgress,
+    resetCreateProgress,
+  } = useUIStore();
 
   const handleGenerate = async () => {
+    if (createLoading) {
+      return;
+    }
+
     if (!config) {
       message.warning('请先配置 LLM');
       navigate('/settings');
       return;
     }
 
-    if (!prompt.trim()) {
+    if (!createPrompt.trim()) {
       message.warning('请输入开营需求');
       return;
     }
 
-    setLoading(true);
-    setProgress(0);
+    setCreateLoading(true);
+    setCreateProgress(0);
 
     const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) return prev;
-        return prev + 10;
-      });
+      tickCreateProgress();
     }, 1000);
 
     try {
-      const result = await generateCamp(prompt);
+      const result = await generateCamp(createPrompt);
       if (result.success) {
         addCamp(result.data);
-        setProgress(100);
+        setCreateProgress(100);
+        clearCreatePrompt();
         message.success('开营物料生成成功！');
         setTimeout(() => {
+          resetCreateProgress();
           navigate(`/camps/${result.data.id}`);
         }, 500);
       } else {
         message.error(result.error || '生成失败');
+        resetCreateProgress();
       }
     } catch (error) {
       message.error('生成失败，请重试');
+      resetCreateProgress();
     } finally {
       clearInterval(progressInterval);
-      setLoading(false);
     }
   };
 
@@ -130,8 +143,8 @@ const CreatePage: React.FC = () => {
               </div>
 
               <TextArea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                value={createPrompt}
+                onChange={(e) => setCreatePrompt(e.target.value)}
                 placeholder="例如：下周五办一场面向新手的华为云数据库实战营"
                 autoSize={{ minRows: 3, maxRows: 6 }}
                 style={{
@@ -143,9 +156,9 @@ const CreatePage: React.FC = () => {
                 }}
               />
 
-              {loading && (
+              {createLoading && (
                 <Progress
-                  percent={progress}
+                  percent={createProgress}
                   strokeColor={{
                     '0%': '#42c7b0',
                     '100%': '#95e1d3',
@@ -158,7 +171,7 @@ const CreatePage: React.FC = () => {
                 type="primary"
                 size="large"
                 onClick={handleGenerate}
-                loading={loading}
+                loading={createLoading}
                 className="gradient-btn"
                 icon={<Sparkles size={20} />}
                 block
@@ -205,7 +218,7 @@ const CreatePage: React.FC = () => {
                 >
                   <Button
                     type="dashed"
-                    onClick={() => setPrompt(example)}
+                    onClick={() => setCreatePrompt(example)}
                     style={{
                       borderRadius: 20,
                       border: '2px dashed #42c7b0',

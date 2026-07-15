@@ -26,10 +26,45 @@ export interface DailyContent {
 
 const dailyContentSchema = z.object({
   day: z.number(),
-  title: z.string(),
-  message: z.string(),
-  checkInPrompt: z.string(),
+  title: z.string().min(1),
+  message: z.string().min(1),
+  checkInPrompt: z.string().min(1),
 });
+
+const CONTENT_ARRAY_KEYS = [
+  'dailyContents',
+  'contents',
+  'data',
+  'days',
+  'items',
+  'dailyContent',
+] as const;
+
+/** Extract daily content array from common LLM JSON shapes. */
+export function extractDailyContentsArray(result: unknown): unknown[] {
+  if (Array.isArray(result)) {
+    return result;
+  }
+
+  if (result && typeof result === 'object') {
+    const obj = result as Record<string, unknown>;
+
+    for (const key of CONTENT_ARRAY_KEYS) {
+      const value = obj[key];
+      if (Array.isArray(value)) {
+        return value;
+      }
+    }
+
+    for (const value of Object.values(obj)) {
+      if (Array.isArray(value)) {
+        return value;
+      }
+    }
+  }
+
+  return [];
+}
 
 export function buildFallbackMessage(plan: CampPlan, day: number): string {
   const isFirst = day === 1;
@@ -81,15 +116,41 @@ class ContentTool {
 3. 鼓励语要有深度但说人话，禁止晦涩抽象
 4. Day 1 开营欢迎；Day 2+ 承接昨日；最后一天结业收尾
 5. checkInPrompt 与「今日任务」③ 保持一致
-6. 返回 JSON 数组格式，数组长度等于 ${plan.durationDays}
+6. 返回 JSON 对象：{ "dailyContents": [...] }，数组长度等于 ${plan.durationDays}
     `;
 
-    const response = await callLLM(config, contentSystemPrompt, userPrompt, true, 6000);
+    const { content: response, finishReason } = await callLLM(
+      config,
+      contentSystemPrompt,
+      userPrompt,
+      true,
+      6000
+    );
+
+    console.log(
+      `Content LLM 响应: finish_reason=${finishReason ?? 'unknown'}, length=${response.length}, preview=${JSON.stringify(response.slice(0, 200))}`
+    );
 
     try {
       const result = JSON.parse(response);
-      const contents = Array.isArray(result) ? result : result.dailyContents || [];
-      return contents.map((content: unknown) => dailyContentSchema.parse(content));
+      const rawContents = extractDailyContentsArray(result);
+      const contents = rawContents.map((content: unknown) => dailyContentSchema.parse(content));
+
+      console.log(`Content 解析结果: dailyContents.length=${contents.length}, expected=${plan.durationDays}`);
+
+      if (contents.length === 0) {
+        console.warn('Content 解析结果为空数组，使用 fallback 文案');
+        return this.getDefaultContent(plan);
+      }
+
+      if (contents.length !== plan.durationDays) {
+        console.warn(
+          `Content 条数与计划天数不符 (${contents.length} vs ${plan.durationDays})，使用 fallback 文案`
+        );
+        return this.getDefaultContent(plan);
+      }
+
+      return contents;
     } catch (error) {
       console.error('Content 输出解析失败，使用 fallback 文案:', error);
       return this.getDefaultContent(plan);

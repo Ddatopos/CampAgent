@@ -189,7 +189,7 @@ class PosterTool {
 3. 文案贴合训练营主题与受众，参考亮点但不照搬
     `;
 
-    const response = await callLLM(config, posterSystemPrompt, userPrompt, true, 4000);
+    const { content: response } = await callLLM(config, posterSystemPrompt, userPrompt, true, 4000);
 
     let content: PosterContent;
     try {

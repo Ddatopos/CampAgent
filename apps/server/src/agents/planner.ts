@@ -28,7 +28,7 @@ const campPlanSchema = z.object({
 
 class PlannerAgent {
   async analyze(prompt: string, config: LLMConfig): Promise<CampPlan> {
-    const response = await callLLM(config, plannerSystemPrompt, prompt, true);
+    const { content: response } = await callLLM(config, plannerSystemPrompt, prompt, true);
     
     try {
       const plan = JSON.parse(response);

@@ -30,13 +30,18 @@ export const testLLMConnection = async (config: LLMConfig): Promise<{ ok: true }
   }
 };
 
+export interface LLMCallResult {
+  content: string;
+  finishReason: string | null;
+}
+
 export const callLLM = async (
   config: LLMConfig,
   systemPrompt: string,
   userPrompt: string,
   jsonMode: boolean = false,
   maxTokens: number = 2000
-): Promise<string> => {
+): Promise<LLMCallResult> => {
   const client = new OpenAI({
     baseURL: config.baseUrl,
     apiKey: config.apiKey,
@@ -52,6 +57,10 @@ export const callLLM = async (
     temperature: 0.7,
     max_tokens: maxTokens,
   });
-  
-  return response.choices[0]?.message?.content || '';
+
+  const choice = response.choices[0];
+  return {
+    content: choice?.message?.content || '',
+    finishReason: choice?.finish_reason ?? null,
+  };
 };
